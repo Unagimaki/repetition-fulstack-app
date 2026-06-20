@@ -23,7 +23,7 @@ func Load() Config {
 		DatabaseURL: getEnv("DATABASE_URL", "postgresql://repetition:repetition@localhost:55432/repetition_app?sslmode=disable"),
 		Host:        getEnv("BACKEND_HOST", "0.0.0.0"),
 		Port:        getEnv("BACKEND_PORT", "14000"),
-		CORSOrigins: splitCSV(getEnv("CORS_ORIGINS", "http://localhost:15173")),
+		CORSOrigins: splitCSV(getEnv("CORS_ORIGINS", "https://repetition-fulstack-app-client-vi8p.vercel.app")),
 	}
 }
 
