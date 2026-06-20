@@ -37,3 +37,19 @@ npm run dev:bot
 - client: `http://localhost:15173`
 - backend: `http://localhost:14000`
 - postgres: `localhost:55432`
+
+## Импорт старых карточек
+
+Экспорт из старого приложения:
+
+```js
+copy(localStorage.getItem("sr_state_v1"))
+```
+
+Сохрани результат в JSON-файл и запусти:
+
+```bash
+node ./scripts/import-learn-app.mjs ./learn-export.json
+```
+
+Импорт использует upsert по `id`, поэтому повторный запуск не создает дубли.

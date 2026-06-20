@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: repetition-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: repetition_app
+      POSTGRES_USER: repetition
+      POSTGRES_PASSWORD: repetition
+    ports:
+      - "55432:5432"
+    volumes:
+      - repetition-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U repetition -d repetition_app"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  repetition-postgres-data:

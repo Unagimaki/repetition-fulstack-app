@@ -1,0 +1,416 @@
+:root {
+  color: #111827;
+  background: #f7f8fa;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: #f7f8fa;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.app-shell {
+  width: min(1120px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 24px 0 48px;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.brand {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.nav {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.nav-link {
+  border-radius: 9px;
+  padding: 9px 12px;
+  color: #6b7280;
+}
+
+.nav-link.active {
+  color: #111827;
+  background: #f3f4f6;
+}
+
+.page,
+.section,
+.card-form,
+.review-card,
+.tile-card {
+  display: grid;
+}
+
+.page {
+  gap: 32px;
+}
+
+.section {
+  gap: 16px;
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  color: #6b7280;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  margin-bottom: 0;
+  font-size: clamp(1.55rem, 3vw, 2.25rem);
+}
+
+.surface,
+.review-card,
+.tile-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.card-form {
+  gap: 16px;
+  padding: 18px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+label {
+  display: grid;
+  gap: 8px;
+  color: #374151;
+  font-weight: 650;
+}
+
+input,
+textarea {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  outline: none;
+  color: #111827;
+  background: #ffffff;
+}
+
+input:focus,
+textarea:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.14);
+}
+
+input {
+  height: 42px;
+  padding: 0 12px;
+}
+
+textarea {
+  min-height: 140px;
+  padding: 12px;
+  resize: vertical;
+}
+
+.actions,
+.review-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.primary-button,
+.secondary-button,
+.ghost-button,
+.danger-soft-button,
+.danger-text-button {
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 10px 13px;
+  color: #111827;
+  background: #ffffff;
+}
+
+.primary-button {
+  color: #ffffff;
+  background: #4f46e5;
+}
+
+.secondary-button {
+  border-color: #d1d5db;
+}
+
+.ghost-button {
+  border-color: #d1d5db;
+}
+
+.danger-soft-button,
+.danger-text-button {
+  color: #b91c1c;
+  border-color: #fecaca;
+  background: #fff7f7;
+}
+
+.fit {
+  width: fit-content;
+}
+
+.review-card {
+  position: relative;
+  gap: 16px;
+  padding: 18px;
+}
+
+.card-tools {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-start;
+}
+
+.review-card > .card-tools {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+}
+
+.icon-button {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  color: #374151;
+  background: #ffffff;
+}
+
+.icon-button.danger {
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+.card-meta,
+.tile-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: space-between;
+  color: #6b7280;
+  font-size: 0.92rem;
+}
+
+.review-card > .card-meta {
+  padding-left: 122px;
+}
+
+.flip-card {
+  position: relative;
+  min-height: 260px;
+  transform-style: preserve-3d;
+  transition: transform 420ms ease;
+}
+
+.flip-card.flipped {
+  transform: rotateY(180deg);
+}
+
+.flip-face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  align-content: center;
+  gap: 14px;
+  padding: 26px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #fafafa;
+  backface-visibility: hidden;
+}
+
+.flip-back {
+  align-content: start;
+  overflow: auto;
+  transform: rotateY(180deg);
+}
+
+.answer-text {
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+
+.counter {
+  display: grid;
+  place-items: center;
+  min-width: 42px;
+  height: 42px;
+  border: 1px solid #e5e7eb;
+  border-radius: 999px;
+  font-weight: 800;
+  background: #ffffff;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.tile-card {
+  grid-template-rows: auto auto auto auto auto 1fr;
+  gap: 12px;
+  height: 360px;
+  padding: 16px;
+}
+
+.tile-card h3 {
+  margin: 0;
+}
+
+.tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 25px;
+}
+
+.tag {
+  border-radius: 999px;
+  padding: 4px 9px;
+  color: #374151;
+  font-size: 0.78rem;
+  background: #f3f4f6;
+}
+
+.tile-answer {
+  display: none;
+  min-height: 0;
+  overflow: auto;
+  white-space: pre-wrap;
+  line-height: 1.55;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 12px;
+  background: #fafafa;
+}
+
+.tile-answer.visible {
+  display: block;
+}
+
+.search-input {
+  max-width: 280px;
+}
+
+.empty-state,
+.error-state,
+.muted-state {
+  padding: 18px;
+  color: #6b7280;
+}
+
+.error-state {
+  color: #b91c1c;
+  border-color: #fecaca;
+  background: #fff7f7;
+}
+
+.muted-state {
+  padding: 0;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(17, 24, 39, 0.28);
+}
+
+.modal {
+  width: min(720px, 100%);
+  max-height: calc(100vh - 40px);
+  overflow: auto;
+  padding: 18px;
+}
+
+@media (max-width: 720px) {
+  .app-shell {
+    width: min(100% - 20px, 1120px);
+    padding-top: 14px;
+  }
+
+  .topbar,
+  .section-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .nav,
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .review-card > .card-meta {
+    padding-left: 0;
+    padding-top: 42px;
+  }
+}

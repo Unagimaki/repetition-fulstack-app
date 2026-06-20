@@ -1,0 +1,56 @@
+import { useState } from "react";
+import type { Card } from "../../../entities/card/model/types";
+
+type Props = {
+  cards: Card[];
+  onEdit: (card: Card) => void;
+  onDelete: (id: string) => Promise<void>;
+  onReset: (id: string) => Promise<void>;
+};
+
+export function CardsGrid({ cards, onEdit, onDelete, onReset }: Props) {
+  const [openedAnswers, setOpenedAnswers] = useState<Record<string, boolean>>({});
+
+  if (cards.length === 0) {
+    return <div className="empty-state surface">Карточек пока нет</div>;
+  }
+
+  return (
+    <div className="cards-grid">
+      {cards.map((card) => (
+        <article className="tile-card surface" key={card.id}>
+          <div className="card-tools">
+            <button className="icon-button" title="Редактировать" onClick={() => onEdit(card)} type="button">✎</button>
+            <button className="icon-button" title="Сбросить уровень" onClick={() => onReset(card.id)} type="button">↺</button>
+            <button className="icon-button danger" title="Удалить" onClick={() => onDelete(card.id)} type="button">×</button>
+          </div>
+          <div className="tags-row">
+            {card.tags.map((tag) => <span className="tag" key={tag}>{tag}</span>)}
+          </div>
+          <h3>{card.title}</h3>
+          <div className="tile-details">
+            <span>Уровень {card.level + 1}: {card.levelLabel}</span>
+            <span>Повторить: {formatDate(card.nextReviewAt)}</span>
+          </div>
+          <button
+            className="ghost-button fit"
+            onClick={() => setOpenedAnswers((state) => ({ ...state, [card.id]: !state[card.id] }))}
+            type="button"
+          >
+            {openedAnswers[card.id] ? "Скрыть ответ" : "Показать ответ"}
+          </button>
+          <div className={openedAnswers[card.id] ? "tile-answer visible" : "tile-answer"}>{card.backText}</div>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function formatDate(value: string): string {
+  return new Intl.DateTimeFormat("ru-RU", {
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(new Date(value));
+}

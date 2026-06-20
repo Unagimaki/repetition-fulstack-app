@@ -1,0 +1,23 @@
+{
+  "name": "repetition-app",
+  "private": true,
+  "workspaces": [
+    "client",
+    "bot"
+  ],
+  "scripts": {
+    "dev:client": "npm run dev -w client",
+    "dev:backend": "go -C backend run ./cmd/api",
+    "dev:bot": "npm run dev -w bot",
+    "import:learn-app": "node scripts/import-learn-app.mjs",
+    "build": "go -C backend build ./cmd/api && npm run build -w bot && npm run build -w client",
+    "typecheck": "go -C backend test ./... && npm run typecheck -w bot && npm run typecheck -w client",
+    "lint": "npm run lint -w bot && npm run lint -w client"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.35.0",
+    "@typescript-eslint/parser": "^8.35.0",
+    "eslint": "^9.29.0",
+    "typescript": "^5.8.3"
+  }
+}
