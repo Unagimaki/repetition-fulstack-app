@@ -31,7 +31,6 @@ export function ReviewCard({ card, position, onReview, onReset, onEdit, onDelete
           <h2>{card.title}</h2>
         </div>
         <div className="flip-face flip-back">
-          <h2>{card.title}</h2>
           <div className="answer-text">{card.backText}</div>
         </div>
       </div>
