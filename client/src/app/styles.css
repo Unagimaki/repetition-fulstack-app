@@ -330,11 +330,39 @@ textarea {
   min-height: 25px;
 }
 
+.tag-editor {
+  display: grid;
+  gap: 8px;
+}
+
+.selected-tags,
+.tag-input-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag-input-row {
+  align-items: center;
+}
+
+.tag-input-row input {
+  flex: 1 1 180px;
+}
+
 .tag {
   border-radius: 999px;
   padding: 4px 9px;
   color: #374151;
   font-size: 0.78rem;
+  background: #f3f4f6;
+}
+
+.tag-chip {
+  border: 0;
+  border-radius: 999px;
+  padding: 6px 10px;
+  color: #374151;
   background: #f3f4f6;
 }
 

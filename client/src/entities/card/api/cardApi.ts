@@ -6,8 +6,12 @@ const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:14000";
 export const cardApi = createApi({
   reducerPath: "cardApi",
   baseQuery: fetchBaseQuery({ baseUrl: API_URL }),
-  tagTypes: ["Cards", "DueCards"],
+  tagTypes: ["Cards", "DueCards", "Tags"],
   endpoints: (builder) => ({
+    listTags: builder.query<string[], void>({
+      query: () => "/api/tags",
+      providesTags: ["Tags"]
+    }),
     listCards: builder.query<Card[], { dueOnly?: boolean; search?: string } | void>({
       query: (params) => ({
         url: "/api/cards",
@@ -28,7 +32,7 @@ export const cardApi = createApi({
         method: "POST",
         body
       }),
-      invalidatesTags: ["Cards", "DueCards"]
+      invalidatesTags: ["Cards", "DueCards", "Tags"]
     }),
     updateCard: builder.mutation<Card, { id: string; input: CardInput }>({
       query: ({ id, input }) => ({
@@ -36,7 +40,7 @@ export const cardApi = createApi({
         method: "PUT",
         body: input
       }),
-      invalidatesTags: ["Cards", "DueCards"]
+      invalidatesTags: ["Cards", "DueCards", "Tags"]
     }),
     deleteCard: builder.mutation<void, string>({
       query: (id) => ({
@@ -64,6 +68,7 @@ export const cardApi = createApi({
 });
 
 export const {
+  useListTagsQuery,
   useListCardsQuery,
   useDueCardsQuery,
   useCreateCardMutation,

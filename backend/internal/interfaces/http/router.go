@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"net/http"
 	"strings"
 
@@ -8,16 +9,22 @@ import (
 	"repetition-app/backend/internal/domain/settings"
 )
 
+type tagLister interface {
+	List(ctx context.Context) ([]string, error)
+}
+
 type Router struct {
 	cards       *appcards.Service
+	tags        tagLister
 	settings    settings.Repository
 	corsOrigins map[string]struct{}
 	mux         *http.ServeMux
 }
 
-func NewRouter(cards *appcards.Service, settings settings.Repository, corsOrigins []string) http.Handler {
+func NewRouter(cards *appcards.Service, tags tagLister, settings settings.Repository, corsOrigins []string) http.Handler {
 	router := &Router{
 		cards:       cards,
+		tags:        tags,
 		settings:    settings,
 		corsOrigins: map[string]struct{}{},
 		mux:         http.NewServeMux(),
@@ -42,6 +49,7 @@ func (r *Router) routes() {
 	r.mux.HandleFunc("DELETE /api/cards/{id}", r.deleteCard)
 	r.mux.HandleFunc("POST /api/cards/{id}/review", r.reviewCard)
 	r.mux.HandleFunc("POST /api/cards/{id}/reset", r.resetCard)
+	r.mux.HandleFunc("GET /api/tags", r.listTags)
 	r.mux.HandleFunc("POST /api/import/learn-app", r.importLearnAppCards)
 	r.mux.HandleFunc("POST /api/telegram/start", r.telegramStart)
 	r.mux.HandleFunc("GET /api/telegram/chat", r.telegramChat)
@@ -74,4 +82,13 @@ func (r *Router) withCORS(next http.Handler) http.Handler {
 
 func (r *Router) health(w http.ResponseWriter, _ *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]bool{"ok": true})
+}
+
+func (r *Router) listTags(w http.ResponseWriter, req *http.Request) {
+	tags, err := r.tags.List(req.Context())
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, tags)
 }

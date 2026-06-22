@@ -1,4 +1,5 @@
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, KeyboardEvent, useMemo, useState } from "react";
+import { useListTagsQuery } from "../../../entities/card/api/cardApi";
 import type { Card, CardInput } from "../../../entities/card/model/types";
 
 type Props = {
@@ -11,26 +12,51 @@ type Props = {
 export function CardForm({ card, submitLabel = "Создать", onSubmit, onCancel }: Props) {
   const [title, setTitle] = useState(card?.title ?? "");
   const [backText, setBackText] = useState(card?.backText ?? "");
-  const [tagsText, setTagsText] = useState(card?.tags.join(", ") ?? "");
+  const [selectedTags, setSelectedTags] = useState<string[]>(card?.tags ?? []);
+  const [tagDraft, setTagDraft] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { data: availableTags = [] } = useListTagsQuery();
 
-  const tags = useMemo(
-    () => tagsText.split(",").map((tag) => tag.trim()).filter(Boolean),
-    [tagsText]
-  );
+  const tagOptions = useMemo(() => {
+    const selected = new Set(selectedTags);
+    return availableTags.filter((tag) => !selected.has(tag));
+  }, [availableTags, selectedTags]);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     setIsSubmitting(true);
     try {
-      await onSubmit({ title, frontText: title, backText, tags });
+      await onSubmit({ title, frontText: title, backText, tags: selectedTags });
       if (!card) {
         setTitle("");
         setBackText("");
-        setTagsText("");
+        setSelectedTags([]);
+        setTagDraft("");
       }
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  function addTag(rawTag = tagDraft) {
+    const tag = rawTag.trim().toLowerCase();
+    if (!tag || selectedTags.includes(tag)) {
+      setTagDraft("");
+      return;
+    }
+
+    setSelectedTags((tags) => [...tags, tag]);
+    setTagDraft("");
+  }
+
+  function removeTag(tag: string) {
+    setSelectedTags((tags) => tags.filter((item) => item !== tag));
+  }
+
+  function handleTagKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key === "Enter" || event.key === ",") {
+      event.preventDefault();
+      addTag();
     }
   }
 
@@ -43,7 +69,32 @@ export function CardForm({ card, submitLabel = "Создать", onSubmit, onCan
         </label>
         <label>
           Теги
-          <input placeholder="js, react, sql" value={tagsText} onChange={(event) => setTagsText(event.target.value)} />
+          <div className="tag-editor">
+            <div className="selected-tags">
+              {selectedTags.map((tag) => (
+                <button className="tag-chip" key={tag} onClick={() => removeTag(tag)} type="button">
+                  {tag} ×
+                </button>
+              ))}
+            </div>
+            <div className="tag-input-row">
+              <input
+                list="card-tag-options"
+                placeholder="Выбрать или создать тег"
+                value={tagDraft}
+                onChange={(event) => setTagDraft(event.target.value)}
+                onKeyDown={handleTagKeyDown}
+              />
+              <button className="ghost-button" onClick={() => addTag()} type="button">
+                Добавить
+              </button>
+            </div>
+            <datalist id="card-tag-options">
+              {tagOptions.map((tag) => (
+                <option key={tag} value={tag} />
+              ))}
+            </datalist>
+          </div>
         </label>
       </div>
       <label>

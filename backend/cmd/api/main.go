@@ -35,12 +35,13 @@ func main() {
 	}
 
 	cardRepo := postgres.NewCardRepository(pool)
+	tagRepo := postgres.NewTagRepository(pool)
 	settingsRepo := postgres.NewSettingsRepository(pool)
 	cardService := cards.NewService(cardRepo)
 
 	server := &http.Server{
 		Addr:              cfg.HTTPAddress(),
-		Handler:           httpapi.NewRouter(cardService, settingsRepo, cfg.CORSOrigins),
+		Handler:           httpapi.NewRouter(cardService, tagRepo, settingsRepo, cfg.CORSOrigins),
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 
