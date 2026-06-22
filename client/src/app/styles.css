@@ -313,14 +313,53 @@ textarea {
 }
 
 .tile-card {
-  grid-template-rows: auto auto auto auto auto 1fr;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   gap: 12px;
-  height: 360px;
+  height: 380px;
   padding: 16px;
 }
 
 .tile-card h3 {
   margin: 0;
+}
+
+.tile-flip-card {
+  position: relative;
+  min-height: 0;
+  transform-style: preserve-3d;
+  transition: transform 420ms ease;
+}
+
+.tile-flip-card.flipped {
+  transform: rotateY(180deg);
+}
+
+.tile-face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  min-height: 0;
+  padding: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #fafafa;
+  backface-visibility: hidden;
+  overflow: hidden;
+}
+
+.tile-face-back {
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: auto;
+  transform: rotateY(180deg);
+}
+
+.tile-answer-text {
+  min-height: 0;
+  overflow: auto;
+  white-space: pre-wrap;
+  line-height: 1.55;
 }
 
 .tags-row {
@@ -364,22 +403,6 @@ textarea {
   padding: 6px 10px;
   color: #374151;
   background: #f3f4f6;
-}
-
-.tile-answer {
-  display: none;
-  min-height: 0;
-  overflow: auto;
-  white-space: pre-wrap;
-  line-height: 1.55;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 12px;
-  background: #fafafa;
-}
-
-.tile-answer.visible {
-  display: block;
 }
 
 .search-input {
