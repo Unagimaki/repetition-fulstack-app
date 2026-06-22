@@ -68,19 +68,20 @@ export function registerReviewFlow(bot: Telegraf, backend: BackendClient) {
 export async function notifyIfDue(bot: Telegraf, backend: BackendClient, meta: PollingMeta) {
   const chatId = await backend.getChatId();
   if (!chatId) {
-    console.log(`[bot] polling #${meta.tick}: chat не подключен`);
+    console.log(`[bot] polling #${meta.tick}: чат не подключен, уведомлять некого`);
     return;
   }
 
   const count = await backend.getNotificationDueCount();
   if (count === 0) {
-    console.log(`[bot] polling #${meta.tick}: данных нет`);
+    console.log(`[bot] polling #${meta.tick}: новых карточек для уведомления нет`);
     return;
   }
 
+  console.log(`[bot] polling #${meta.tick}: найдены новые карточки для повтора, count=${count}`);
   await bot.telegram.sendMessage(chatId, dueMessage(count), dueKeyboard());
-  await backend.markDueForNotification();
-  console.log(`[bot] polling #${meta.tick}: отправлено уведомление, карточек ${count}`);
+  const markedCount = await backend.markDueForNotification();
+  console.log(`[bot] polling #${meta.tick}: уведомление отправлено, помечено карточек=${markedCount}`);
 }
 
 async function showNextDueCard(ctx: Context, backend: BackendClient, edit: boolean) {

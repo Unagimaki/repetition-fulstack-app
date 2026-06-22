@@ -274,6 +274,7 @@ func (r *CardRepository) CountDueForNotification(ctx context.Context, now time.T
 		from cards
 		where deleted_at is null
 			and next_review_at <= $1
+			and (last_notified_at is null or last_notified_at < next_review_at)
 			and (notification_snoozed_until is null or notification_snoozed_until <= $1)
 	`, now).Scan(&count)
 	return count, err
@@ -285,6 +286,7 @@ func (r *CardRepository) MarkDueNotified(ctx context.Context, notifiedAt time.Ti
 		set last_notified_at = $1, notification_snoozed_until = $2, updated_at = $1
 		where deleted_at is null
 			and next_review_at <= $1
+			and (last_notified_at is null or last_notified_at < next_review_at)
 			and (notification_snoozed_until is null or notification_snoozed_until <= $1)
 	`, notifiedAt, snoozedUntil)
 	return tag.RowsAffected(), err
