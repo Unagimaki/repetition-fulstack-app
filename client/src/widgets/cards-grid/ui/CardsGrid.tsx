@@ -36,13 +36,6 @@ export function CardsGrid({ cards, onEdit, onDelete, onReset }: Props) {
 
             <div className={isFlipped ? "tile-flip-card flipped" : "tile-flip-card"}>
               <div className="tile-face tile-face-front">
-                <div className="tags-row">
-                  {card.tags.map((tag) => (
-                    <span className="tag" key={tag}>
-                      {tag}
-                    </span>
-                  ))}
-                </div>
                 <h3>{card.title}</h3>
                 <div className="tile-details">
                   <span>
@@ -50,10 +43,16 @@ export function CardsGrid({ cards, onEdit, onDelete, onReset }: Props) {
                   </span>
                   <span>Повторить: {formatDate(card.nextReviewAt)}</span>
                 </div>
+                <div className="tags-row">
+                  {card.tags.map((tag) => (
+                    <span className="tag" key={tag}>
+                      {tag}
+                    </span>
+                  ))}
+                </div>
               </div>
 
               <div className="tile-face tile-face-back">
-                <h3>{card.title}</h3>
                 <div className="tile-answer-text">{card.backText}</div>
               </div>
             </div>
