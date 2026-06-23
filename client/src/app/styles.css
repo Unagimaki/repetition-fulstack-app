@@ -409,6 +409,24 @@ textarea {
   max-width: 280px;
 }
 
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: #6b7280;
+}
+
+.pagination-actions {
+  display: flex;
+  gap: 8px;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 .empty-state,
 .error-state,
 .muted-state {

@@ -7,14 +7,19 @@ import {
 } from "../../../entities/card/api/cardApi";
 import type { Card, CardInput } from "../../../entities/card/model/types";
 
+const PAGE_SIZE = 12;
+
 export function useCardsCatalog() {
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
   const [editingCard, setEditingCard] = useState<Card | null>(null);
 
-  const cardsQuery = useListCardsQuery({ search });
+  const cardsQuery = useListCardsQuery({ search, page, pageSize: PAGE_SIZE });
   const [updateCardMutation, updateCardState] = useUpdateCardMutation();
   const [deleteCardMutation, deleteCardState] = useDeleteCardMutation();
   const [resetCardMutation, resetCardState] = useResetCardMutation();
+  const total = cardsQuery.data?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   const errorMessage = useMemo(() => {
     if (cardsQuery.error) {
@@ -46,15 +51,25 @@ export function useCardsCatalog() {
     await resetCardMutation(id).unwrap();
   }
 
+  function updateSearch(value: string) {
+    setSearch(value);
+    setPage(1);
+  }
+
   return {
-    cards: cardsQuery.data ?? [],
+    cards: cardsQuery.data?.items ?? [],
+    page,
+    pageSize: PAGE_SIZE,
+    total,
+    totalPages,
     search,
     editingCard,
     error: errorMessage,
     isFetching: cardsQuery.isFetching,
     isLoading: cardsQuery.isLoading,
     refetch: cardsQuery.refetch,
-    setSearch,
+    setSearch: updateSearch,
+    setPage,
     setEditingCard,
     updateCard,
     deleteCard,

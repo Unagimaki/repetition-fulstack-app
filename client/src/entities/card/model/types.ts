@@ -21,3 +21,10 @@ export type CardInput = {
   tags: string[];
 };
 
+export type CardsPage = {
+  items: Card[];
+  total: number;
+  page: number;
+  pageSize: number;
+};
+

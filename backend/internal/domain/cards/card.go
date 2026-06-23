@@ -39,10 +39,10 @@ type ImportedCardInput struct {
 }
 
 type ListFilter struct {
-	DueOnly bool
-	Search  string
-	Tag     string
-	Page    int
+	DueOnly  bool
+	Search   string
+	Tag      string
+	Page     int
 	PageSize int
 }
 

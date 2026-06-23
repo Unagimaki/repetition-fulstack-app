@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import type { Card, CardInput, ReviewResult } from "../model/types";
+import type { Card, CardInput, CardsPage, ReviewResult } from "../model/types";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:14000";
 
@@ -12,12 +12,14 @@ export const cardApi = createApi({
       query: () => "/api/tags",
       providesTags: ["Tags"]
     }),
-    listCards: builder.query<Card[], { dueOnly?: boolean; search?: string } | void>({
+    listCards: builder.query<CardsPage, { dueOnly?: boolean; search?: string; page?: number; pageSize?: number } | void>({
       query: (params) => ({
         url: "/api/cards",
         params: {
           ...(params?.dueOnly ? { dueOnly: true } : {}),
-          ...(params?.search ? { search: params.search } : {})
+          ...(params?.search ? { search: params.search } : {}),
+          ...(params?.page ? { page: params.page } : {}),
+          ...(params?.pageSize ? { pageSize: params.pageSize } : {})
         }
       }),
       providesTags: ["Cards"]
