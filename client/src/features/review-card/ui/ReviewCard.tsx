@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Card, ReviewResult } from "../../../entities/card/model/types";
+import { FormattedText } from "../../../shared/api/FormattedText";
 
 type Props = {
   card: Card;
@@ -31,7 +32,9 @@ export function ReviewCard({ card, position, onReview, onReset, onEdit, onDelete
           <h2>{card.title}</h2>
         </div>
         <div className="flip-face flip-back">
-          <div className="answer-text">{card.backText}</div>
+          <div className="answer-text">
+            <FormattedText text={card.backText} />
+          </div>
         </div>
       </div>
 

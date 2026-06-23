@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Card } from "../../../entities/card/model/types";
+import { FormattedText } from "../../../shared/api/FormattedText";
 
 type Props = {
   cards: Card[];
@@ -53,7 +54,9 @@ export function CardsGrid({ cards, onEdit, onDelete, onReset }: Props) {
               </div>
 
               <div className="tile-face tile-face-back">
-                <div className="tile-answer-text">{card.backText}</div>
+                <div className="tile-answer-text">
+                  <FormattedText text={card.backText} />
+                </div>
               </div>
             </div>
 
