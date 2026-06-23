@@ -60,9 +60,18 @@ func (s *Service) Delete(ctx context.Context, id string) error {
 	return s.repository.SoftDelete(ctx, id)
 }
 
-func (s *Service) List(ctx context.Context, filter carddomain.ListFilter) ([]carddomain.Card, error) {
+func (s *Service) List(ctx context.Context, filter carddomain.ListFilter) (carddomain.ListResult, error) {
 	filter.Search = strings.TrimSpace(filter.Search)
 	filter.Tag = strings.ToLower(strings.TrimSpace(filter.Tag))
+	if filter.Page <= 0 {
+		filter.Page = 1
+	}
+	if filter.PageSize <= 0 {
+		filter.PageSize = 12
+	}
+	if filter.PageSize > 100 {
+		filter.PageSize = 100
+	}
 	return s.repository.List(ctx, filter)
 }
 

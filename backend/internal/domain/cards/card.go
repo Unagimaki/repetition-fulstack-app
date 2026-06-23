@@ -42,6 +42,15 @@ type ListFilter struct {
 	DueOnly bool
 	Search  string
 	Tag     string
+	Page    int
+	PageSize int
+}
+
+type ListResult struct {
+	Items    []Card
+	Total    int
+	Page     int
+	PageSize int
 }
 
 type Repository interface {
@@ -49,7 +58,7 @@ type Repository interface {
 	ImportMany(ctx context.Context, inputs []ImportedCardInput) (int, error)
 	Update(ctx context.Context, id string, input CardInput) (Card, error)
 	SoftDelete(ctx context.Context, id string) error
-	List(ctx context.Context, filter ListFilter) ([]Card, error)
+	List(ctx context.Context, filter ListFilter) (ListResult, error)
 	Due(ctx context.Context, limit int) ([]Card, error)
 	Get(ctx context.Context, id string) (Card, error)
 	SaveReview(ctx context.Context, id string, level int, nextReviewAt time.Time, reviewedAt time.Time) (Card, error)

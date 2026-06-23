@@ -2,6 +2,7 @@ package http
 
 import (
 	"net/http"
+	"strconv"
 
 	carddomain "repetition-app/backend/internal/domain/cards"
 	"repetition-app/backend/internal/domain/repetition"
@@ -13,16 +14,23 @@ type reviewRequest struct {
 
 func (r *Router) listCards(w http.ResponseWriter, req *http.Request) {
 	query := req.URL.Query()
-	cards, err := r.cards.List(req.Context(), carddomain.ListFilter{
-		DueOnly: query.Get("dueOnly") == "true",
-		Search:  query.Get("search"),
-		Tag:     query.Get("tag"),
+	result, err := r.cards.List(req.Context(), carddomain.ListFilter{
+		DueOnly:  query.Get("dueOnly") == "true",
+		Search:   query.Get("search"),
+		Tag:      query.Get("tag"),
+		Page:     parsePositiveInt(query.Get("page"), 1),
+		PageSize: parsePositiveInt(query.Get("pageSize"), 12),
 	})
 	if err != nil {
 		writeError(w, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, toCardResponses(cards))
+	writeJSON(w, http.StatusOK, map[string]any{
+		"items":    toCardResponses(result.Items),
+		"total":    result.Total,
+		"page":     result.Page,
+		"pageSize": result.PageSize,
+	})
 }
 
 func (r *Router) dueCards(w http.ResponseWriter, req *http.Request) {
@@ -98,4 +106,15 @@ func (r *Router) resetCard(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, toCardResponse(card))
+}
+
+func parsePositiveInt(value string, fallback int) int {
+	if value == "" {
+		return fallback
+	}
+	parsed, err := strconv.Atoi(value)
+	if err != nil || parsed <= 0 {
+		return fallback
+	}
+	return parsed
 }

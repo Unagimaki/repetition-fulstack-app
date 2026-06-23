@@ -150,7 +150,7 @@ func (r *CardRepository) SoftDelete(ctx context.Context, id string) error {
 	return nil
 }
 
-func (r *CardRepository) List(ctx context.Context, filter carddomain.ListFilter) ([]carddomain.Card, error) {
+func (r *CardRepository) List(ctx context.Context, filter carddomain.ListFilter) (carddomain.ListResult, error) {
 	where := []string{"c.deleted_at is null"}
 	args := []any{}
 
@@ -172,21 +172,49 @@ func (r *CardRepository) List(ctx context.Context, filter carddomain.ListFilter)
 		)`)
 	}
 
+	whereSQL := strings.Join(where, " and ")
+	var total int
+	countQuery := `
+		select count(*)
+		from cards c
+		where ` + whereSQL
+	if err := r.pool.QueryRow(ctx, countQuery, args...).Scan(&total); err != nil {
+		return carddomain.ListResult{}, err
+	}
+
+	page := filter.Page
+	pageSize := filter.PageSize
+	offset := (page - 1) * pageSize
+	args = append(args, pageSize, offset)
+	limitPosition := "$" + itoa(len(args)-1)
+	offsetPosition := "$" + itoa(len(args))
+
 	query := `
 		select c.id, c.title, c.front_text, c.back_text, c.level, c.next_review_at,
 			c.last_reviewed_at, c.created_at, c.updated_at
 		from cards c
-		where ` + strings.Join(where, " and ") + `
+		where ` + whereSQL + `
 		order by c.next_review_at asc, c.created_at desc
+		limit ` + limitPosition + ` offset ` + offsetPosition + `
 	`
 
 	rows, err := r.pool.Query(ctx, query, args...)
 	if err != nil {
-		return nil, err
+		return carddomain.ListResult{}, err
 	}
 	defer rows.Close()
 
-	return r.scanCardsWithTags(ctx, rows)
+	cards, err := r.scanCardsWithTags(ctx, rows)
+	if err != nil {
+		return carddomain.ListResult{}, err
+	}
+
+	return carddomain.ListResult{
+		Items:    cards,
+		Total:    total,
+		Page:     page,
+		PageSize: pageSize,
+	}, nil
 }
 
 func (r *CardRepository) Due(ctx context.Context, limit int) ([]carddomain.Card, error) {
