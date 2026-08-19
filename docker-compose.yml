@@ -1,4 +1,18 @@
+version: "3.9"
+
 services:
+  backend:
+    image: repetition-backend:local
+    container_name: repetition-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "postgresql://repetition:repetition@postgres:5432/repetition_app?sslmode=disable"
+    ports:
+      - "14000:14000"
+
   postgres:
     image: postgres:16-alpine
     container_name: repetition-postgres
