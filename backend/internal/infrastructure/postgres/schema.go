@@ -35,6 +35,13 @@ func EnsureSchema(ctx context.Context, pool *pgxpool.Pool) error {
 			primary key (card_id, tag_id)
 		);
 
+		create table if not exists card_reviews (
+			id bigserial primary key,
+			card_id text not null references cards(id) on delete cascade,
+			reviewed_at timestamptz not null,
+			was_backlog boolean not null default false
+		);
+
 		create table if not exists app_settings (
 			key text primary key,
 			value text not null,
@@ -44,6 +51,8 @@ func EnsureSchema(ctx context.Context, pool *pgxpool.Pool) error {
 		create index if not exists idx_cards_next_review_at on cards(next_review_at);
 		create index if not exists idx_cards_deleted_next_review on cards(deleted_at, next_review_at);
 		create index if not exists idx_card_tags_tag_id on card_tags(tag_id);
+		create index if not exists idx_card_reviews_backlog_day
+			on card_reviews(reviewed_at) where was_backlog;
 	`)
 	return err
 }

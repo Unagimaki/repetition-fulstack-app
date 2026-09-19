@@ -217,15 +217,36 @@ func (r *CardRepository) List(ctx context.Context, filter carddomain.ListFilter)
 	}, nil
 }
 
-func (r *CardRepository) Due(ctx context.Context, limit int) ([]carddomain.Card, error) {
+func (r *CardRepository) Due(ctx context.Context, filter carddomain.DueFilter) ([]carddomain.Card, error) {
 	rows, err := r.pool.Query(ctx, `
+		with backlog_usage as (
+			select count(*)::integer as used
+			from card_reviews
+			where was_backlog and reviewed_at >= $2 and reviewed_at < $3
+		), ranked as (
+			select c.*,
+				case
+					when c.level <= 2 then 0
+					when c.next_review_at >= $2 then 1
+					else 2
+				end as due_priority,
+				row_number() over (
+					partition by (c.level >= 3 and c.next_review_at < $2)
+					order by c.next_review_at asc, c.created_at asc
+				) as backlog_rank
+			from cards c
+			where c.deleted_at is null and c.next_review_at <= $1
+		)
 		select id, title, front_text, back_text, level, next_review_at,
 			last_reviewed_at, created_at, updated_at
-		from cards
-		where deleted_at is null and next_review_at <= $1
-		order by next_review_at asc, created_at asc
-		limit $2
-	`, time.Now().UTC(), limit)
+		from ranked, backlog_usage
+		where due_priority < 2
+			or backlog_rank <= greatest($5 - backlog_usage.used, 0)
+		order by due_priority asc,
+			case when due_priority = 0 then created_at end desc,
+			next_review_at asc
+		limit $4
+	`, filter.Now, filter.DayStart, filter.DayEnd, filter.Limit, filter.DailyBacklogLimit)
 	if err != nil {
 		return nil, err
 	}
@@ -255,8 +276,14 @@ func (r *CardRepository) Get(ctx context.Context, id string) (carddomain.Card, e
 	return card, nil
 }
 
-func (r *CardRepository) SaveReview(ctx context.Context, id string, level int, nextReviewAt time.Time, reviewedAt time.Time) (carddomain.Card, error) {
-	tag, err := r.pool.Exec(ctx, `
+func (r *CardRepository) SaveReview(ctx context.Context, id string, level int, nextReviewAt time.Time, reviewedAt time.Time, backlog bool) (carddomain.Card, error) {
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return carddomain.Card{}, err
+	}
+	defer rollback(ctx, tx)
+
+	tag, err := tx.Exec(ctx, `
 		update cards
 		set level = $2, next_review_at = $3, last_reviewed_at = $4,
 			notification_snoozed_until = null, updated_at = $4
@@ -267,6 +294,15 @@ func (r *CardRepository) SaveReview(ctx context.Context, id string, level int, n
 	}
 	if tag.RowsAffected() == 0 {
 		return carddomain.Card{}, pgx.ErrNoRows
+	}
+	if _, err := tx.Exec(ctx, `
+		insert into card_reviews (card_id, reviewed_at, was_backlog)
+		values ($1, $2, $3)
+	`, id, reviewedAt, backlog); err != nil {
+		return carddomain.Card{}, err
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return carddomain.Card{}, err
 	}
 	return r.Get(ctx, id)
 }

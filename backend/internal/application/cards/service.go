@@ -11,11 +11,16 @@ import (
 
 type Service struct {
 	repository carddomain.Repository
+	now        func() time.Time
 }
 
 func NewService(repository carddomain.Repository) *Service {
-	return &Service{repository: repository}
+	return &Service{repository: repository, now: time.Now}
 }
+
+const dailyBacklogLimit = 5
+
+var saratovLocation = time.FixedZone("Europe/Saratov", 4*60*60)
 
 func (s *Service) Create(ctx context.Context, input carddomain.CardInput) (carddomain.Card, error) {
 	return s.repository.Create(ctx, normalizeInput(input))
@@ -79,7 +84,15 @@ func (s *Service) Due(ctx context.Context, limit int) ([]carddomain.Card, error)
 	if limit <= 0 {
 		limit = 20
 	}
-	return s.repository.Due(ctx, limit)
+	now := s.now()
+	dayStart, dayEnd := saratovDay(now)
+	return s.repository.Due(ctx, carddomain.DueFilter{
+		Now:               now,
+		DayStart:          dayStart,
+		DayEnd:            dayEnd,
+		Limit:             limit,
+		DailyBacklogLimit: dailyBacklogLimit,
+	})
 }
 
 func (s *Service) Review(ctx context.Context, id string, result repetition.ReviewResult) (carddomain.Card, error) {
@@ -88,9 +101,11 @@ func (s *Service) Review(ctx context.Context, id string, result repetition.Revie
 		return carddomain.Card{}, err
 	}
 
-	now := time.Now().UTC()
+	now := s.now()
 	level, nextReviewAt := carddomain.Review(card, result, now)
-	return s.repository.SaveReview(ctx, id, level, nextReviewAt, now)
+	dayStart, _ := saratovDay(now)
+	backlog := card.Level >= 3 && card.NextReviewAt.Before(dayStart)
+	return s.repository.SaveReview(ctx, id, level, nextReviewAt, now, backlog)
 }
 
 func (s *Service) Reset(ctx context.Context, id string) (carddomain.Card, error) {
@@ -137,4 +152,10 @@ func normalizeInput(input carddomain.CardInput) carddomain.CardInput {
 		BackText:  strings.TrimSpace(input.BackText),
 		Tags:      tags,
 	}
+}
+
+func saratovDay(now time.Time) (time.Time, time.Time) {
+	local := now.In(saratovLocation)
+	start := time.Date(local.Year(), local.Month(), local.Day(), 0, 0, 0, 0, saratovLocation)
+	return start, start.AddDate(0, 0, 1)
 }

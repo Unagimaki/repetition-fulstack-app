@@ -53,15 +53,23 @@ type ListResult struct {
 	PageSize int
 }
 
+type DueFilter struct {
+	Now               time.Time
+	DayStart          time.Time
+	DayEnd            time.Time
+	Limit             int
+	DailyBacklogLimit int
+}
+
 type Repository interface {
 	Create(ctx context.Context, input CardInput) (Card, error)
 	ImportMany(ctx context.Context, inputs []ImportedCardInput) (int, error)
 	Update(ctx context.Context, id string, input CardInput) (Card, error)
 	SoftDelete(ctx context.Context, id string) error
 	List(ctx context.Context, filter ListFilter) (ListResult, error)
-	Due(ctx context.Context, limit int) ([]Card, error)
+	Due(ctx context.Context, filter DueFilter) ([]Card, error)
 	Get(ctx context.Context, id string) (Card, error)
-	SaveReview(ctx context.Context, id string, level int, nextReviewAt time.Time, reviewedAt time.Time) (Card, error)
+	SaveReview(ctx context.Context, id string, level int, nextReviewAt time.Time, reviewedAt time.Time, backlog bool) (Card, error)
 	ResetLevel(ctx context.Context, id string, nextReviewAt time.Time) (Card, error)
 	SnoozeDue(ctx context.Context, until time.Time) (int64, error)
 	CountDueForNotification(ctx context.Context, now time.Time) (int, error)
