@@ -53,6 +53,7 @@ a {
 
 .nav {
   display: flex;
+  flex-wrap: wrap;
   gap: 4px;
   padding: 4px;
   border: 1px solid #e5e7eb;
@@ -64,6 +65,24 @@ a {
   border-radius: 9px;
   padding: 9px 12px;
   color: #6b7280;
+}
+
+.today-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 20px;
+  padding: 20px;
+  overflow-wrap: anywhere;
+}
+
+.today-card time {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.today-card h2 {
+  margin-bottom: 8px;
+  font-size: 1.1rem;
 }
 
 .nav-link.active {

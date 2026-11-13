@@ -1,6 +1,7 @@
 import { NavLink, Route, Routes } from "react-router-dom";
 import { CardsPage } from "../pages/cards/CardsPage";
 import { HomePage } from "../pages/home/HomePage";
+import { TodayPage } from "../pages/today/TodayPage";
 
 export function App() {
   return (
@@ -16,11 +17,15 @@ export function App() {
           <NavLink className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")} to="/cards">
             Все карточки
           </NavLink>
+          <NavLink className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")} to="/today">
+            На сегодня
+          </NavLink>
         </nav>
       </header>
       <Routes>
         <Route element={<HomePage />} path="/" />
         <Route element={<CardsPage />} path="/cards" />
+        <Route element={<TodayPage />} path="/today" />
       </Routes>
     </div>
   );

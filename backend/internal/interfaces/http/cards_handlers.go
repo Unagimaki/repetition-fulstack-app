@@ -15,11 +15,12 @@ type reviewRequest struct {
 func (r *Router) listCards(w http.ResponseWriter, req *http.Request) {
 	query := req.URL.Query()
 	result, err := r.cards.List(req.Context(), carddomain.ListFilter{
-		DueOnly:  query.Get("dueOnly") == "true",
-		Search:   query.Get("search"),
-		Tag:      query.Get("tag"),
-		Page:     parsePositiveInt(query.Get("page"), 1),
-		PageSize: parsePositiveInt(query.Get("pageSize"), 12),
+		TodayOnly: query.Get("todayOnly") == "true",
+		DueOnly:   query.Get("dueOnly") == "true",
+		Search:    query.Get("search"),
+		Tag:       query.Get("tag"),
+		Page:      parsePositiveInt(query.Get("page"), 1),
+		PageSize:  parsePositiveInt(query.Get("pageSize"), 12),
 	})
 	if err != nil {
 		writeError(w, err)

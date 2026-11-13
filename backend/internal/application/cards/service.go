@@ -66,6 +66,9 @@ func (s *Service) Delete(ctx context.Context, id string) error {
 }
 
 func (s *Service) List(ctx context.Context, filter carddomain.ListFilter) (carddomain.ListResult, error) {
+	if filter.TodayOnly {
+		filter.DayStart, filter.DayEnd = saratovDay(s.now())
+	}
 	filter.Search = strings.TrimSpace(filter.Search)
 	filter.Tag = strings.ToLower(strings.TrimSpace(filter.Tag))
 	if filter.Page <= 0 {

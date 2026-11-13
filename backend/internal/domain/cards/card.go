@@ -39,11 +39,14 @@ type ImportedCardInput struct {
 }
 
 type ListFilter struct {
-	DueOnly  bool
-	Search   string
-	Tag      string
-	Page     int
-	PageSize int
+	TodayOnly bool
+	DayStart  time.Time
+	DayEnd    time.Time
+	DueOnly   bool
+	Search    string
+	Tag       string
+	Page      int
+	PageSize  int
 }
 
 type ListResult struct {
