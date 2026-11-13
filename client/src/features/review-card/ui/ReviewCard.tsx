@@ -27,6 +27,16 @@ export function ReviewCard({ card, position, onReview, onReset, onEdit, onDelete
         <span>Уровень {card.level + 1}: {card.levelLabel}</span>
       </div>
 
+      {card.tags.length > 0 ? (
+        <div className="tags-row" aria-label="Теги карточки">
+          {card.tags.map((tag) => (
+            <span className="tag" key={tag}>
+              {tag}
+            </span>
+          ))}
+        </div>
+      ) : null}
+
       <div className={isAnswerVisible ? "flip-card flipped" : "flip-card"}>
         <div className="flip-face flip-front">
           <h2>{card.title}</h2>
