@@ -13,7 +13,35 @@ type recordingRepository struct {
 	carddomain.Repository
 	card       carddomain.Card
 	dueFilter  carddomain.DueFilter
+	listFilter carddomain.ListFilter
 	wasBacklog bool
+}
+
+func (r *recordingRepository) List(_ context.Context, filter carddomain.ListFilter) (carddomain.ListResult, error) {
+	r.listFilter = filter
+	return carddomain.ListResult{}, nil
+}
+
+func TestListTodayUsesSaratovCalendarDay(t *testing.T) {
+	for _, hour := range []int{19, 20, 23} {
+		t.Run(time.Date(2026, 11, 13, hour, 0, 0, 0, time.UTC).Format(time.RFC3339), func(t *testing.T) {
+			now := time.Date(2026, 11, 13, hour, 0, 0, 0, time.UTC)
+			repository := &recordingRepository{}
+			service := NewService(repository)
+			service.now = func() time.Time { return now }
+			if _, err := service.List(context.Background(), carddomain.ListFilter{TodayOnly: true}); err != nil {
+				t.Fatal(err)
+			}
+			day := 13
+			if hour >= 20 {
+				day = 14
+			}
+			start := time.Date(2026, 11, day, 0, 0, 0, 0, saratovLocation)
+			if !repository.listFilter.DayStart.Equal(start) || !repository.listFilter.DayEnd.Equal(start.AddDate(0, 0, 1)) {
+				t.Fatalf("unexpected day bounds: %v to %v", repository.listFilter.DayStart, repository.listFilter.DayEnd)
+			}
+		})
+	}
 }
 
 func (r *recordingRepository) Due(_ context.Context, filter carddomain.DueFilter) ([]carddomain.Card, error) {

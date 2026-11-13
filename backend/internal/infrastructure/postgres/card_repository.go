@@ -153,6 +153,10 @@ func (r *CardRepository) SoftDelete(ctx context.Context, id string) error {
 func (r *CardRepository) List(ctx context.Context, filter carddomain.ListFilter) (carddomain.ListResult, error) {
 	where := []string{"c.deleted_at is null"}
 	args := []any{}
+	if filter.TodayOnly {
+		args = append(args, filter.DayStart, filter.DayEnd)
+		where = append(where, "c.next_review_at >= $1 and c.next_review_at < $2")
+	}
 
 	if filter.DueOnly {
 		args = append(args, time.Now().UTC())
