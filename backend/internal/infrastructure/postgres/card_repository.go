@@ -192,13 +192,19 @@ func (r *CardRepository) List(ctx context.Context, filter carddomain.ListFilter)
 	args = append(args, pageSize, offset)
 	limitPosition := "$" + itoa(len(args)-1)
 	offsetPosition := "$" + itoa(len(args))
+	orderBy := "c.next_review_at asc, c.created_at desc"
+	if filter.TodayOnly {
+		orderBy = `case when c.level <= 2 then 0 else 1 end asc,
+			case when c.level <= 2 then c.created_at end desc,
+			c.next_review_at asc`
+	}
 
 	query := `
 		select c.id, c.title, c.front_text, c.back_text, c.level, c.next_review_at,
 			c.last_reviewed_at, c.created_at, c.updated_at
 		from cards c
 		where ` + whereSQL + `
-		order by c.next_review_at asc, c.created_at desc
+		order by ` + orderBy + `
 		limit ` + limitPosition + ` offset ` + offsetPosition + `
 	`
 

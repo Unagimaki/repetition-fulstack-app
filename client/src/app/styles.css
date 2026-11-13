@@ -80,6 +80,10 @@ a {
   font-variant-numeric: tabular-nums;
 }
 
+.today-review-actions {
+  margin-top: 16px;
+}
+
 .today-card h2 {
   margin-bottom: 8px;
   font-size: 1.1rem;
