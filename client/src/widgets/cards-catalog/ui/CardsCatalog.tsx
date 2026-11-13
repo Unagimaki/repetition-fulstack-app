@@ -1,4 +1,4 @@
-import { CardForm } from "../../../features/card-form/ui/CardForm";
+import { CardForm } from "../../../features/card-form";
 import { CardsGrid } from "../../cards-grid/ui/CardsGrid";
 import { useCardsCatalog } from "../model/useCardsCatalog";
 

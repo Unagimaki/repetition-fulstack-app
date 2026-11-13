@@ -157,7 +157,8 @@ h1 {
   gap: 16px;
 }
 
-label {
+label,
+.form-field {
   display: grid;
   gap: 8px;
   color: #374151;

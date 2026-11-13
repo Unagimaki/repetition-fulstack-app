@@ -1,161 +1,29 @@
-import { FormEvent, KeyboardEvent, useMemo, useRef, useState } from "react";
-import { useListTagsQuery } from "../../../entities/card/api/cardApi";
-import type { Card, CardInput } from "../../../entities/card/model/types";
+import { useCardForm } from "../model/useCardForm";
+import type { CardFormProps } from "../model/useCardForm";
+import { CardTitleField } from "./CardTitleField";
+import { CardTagsField } from "./CardTagsField";
+import { CardAnswerField } from "./CardAnswerField";
+import { CardFormActions } from "./CardFormActions";
 
-type Props = {
-  card?: Card;
-  submitLabel?: string;
-  onSubmit: (input: CardInput) => Promise<void>;
-  onCancel?: () => void;
-};
-
-type FormatKind = "bold" | "italic" | "inlineCode" | "codeBlock";
-
-export function CardForm({ card, submitLabel = "Создать", onSubmit, onCancel }: Props) {
-  const [title, setTitle] = useState(card?.title ?? "");
-  const [backText, setBackText] = useState(card?.backText ?? "");
-  const [selectedTags, setSelectedTags] = useState<string[]>(card?.tags ?? []);
-  const [tagDraft, setTagDraft] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-  const { data: availableTags = [] } = useListTagsQuery();
-
-  const tagOptions = useMemo(() => {
-    const selected = new Set(selectedTags);
-    return availableTags.filter((tag) => !selected.has(tag));
-  }, [availableTags, selectedTags]);
-
-  async function handleSubmit(event: FormEvent) {
-    event.preventDefault();
-    setIsSubmitting(true);
-    try {
-      await onSubmit({ title, frontText: title, backText, tags: selectedTags });
-      if (!card) {
-        setTitle("");
-        setBackText("");
-        setSelectedTags([]);
-        setTagDraft("");
-      }
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  function addTag(rawTag = tagDraft) {
-    const tag = rawTag.trim().toLowerCase();
-    if (!tag || selectedTags.includes(tag)) {
-      setTagDraft("");
-      return;
-    }
-
-    setSelectedTags((tags) => [...tags, tag]);
-    setTagDraft("");
-  }
-
-  function removeTag(tag: string) {
-    setSelectedTags((tags) => tags.filter((item) => item !== tag));
-  }
-
-  function handleTagKeyDown(event: KeyboardEvent<HTMLInputElement>) {
-    if (event.key === "Enter" || event.key === ",") {
-      event.preventDefault();
-      addTag();
-    }
-  }
-
-  function applyFormat(kind: FormatKind) {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selected = backText.slice(start, end);
-    const fallback = kind === "codeBlock" ? "код" : "текст";
-    const value = selected || fallback;
-    const [prefix, suffix] = formatWrap(kind);
-    const nextText = `${backText.slice(0, start)}${prefix}${value}${suffix}${backText.slice(end)}`;
-
-    setBackText(nextText);
-    requestAnimationFrame(() => {
-      const nextStart = start + prefix.length;
-      const nextEnd = nextStart + value.length;
-      textarea.focus();
-      textarea.setSelectionRange(nextStart, nextEnd);
-    });
-  }
+export function CardForm({ card, submitLabel = "Создать", onSubmit, onCancel }: CardFormProps) {
+  const form = useCardForm({ card, onSubmit });
 
   return (
-    <form className="card-form surface" onSubmit={handleSubmit}>
+    <form className="card-form surface" onSubmit={form.handleSubmit}>
       <div className="form-grid">
-        <label>
-          Заголовок
-          <input value={title} onChange={(event) => setTitle(event.target.value)} required />
-        </label>
-        <label>
-          Теги
-          <div className="tag-editor">
-            <div className="selected-tags">
-              {selectedTags.map((tag) => (
-                <button className="tag-chip" key={tag} onClick={() => removeTag(tag)} type="button">
-                  {tag} ×
-                </button>
-              ))}
-            </div>
-            <div className="tag-input-row">
-              <input
-                list="card-tag-options"
-                placeholder="Выбрать или создать тег"
-                value={tagDraft}
-                onChange={(event) => setTagDraft(event.target.value)}
-                onKeyDown={handleTagKeyDown}
-              />
-              <button className="ghost-button" onClick={() => addTag()} type="button">
-                Добавить
-              </button>
-            </div>
-            <datalist id="card-tag-options">
-              {tagOptions.map((tag) => (
-                <option key={tag} value={tag} />
-              ))}
-            </datalist>
-          </div>
-        </label>
+        <CardTitleField value={form.title} onChange={form.setTitle} />
+        <CardTagsField
+          selectedTags={form.selectedTags}
+          tagDraft={form.tagDraft}
+          tagOptions={form.tagOptions}
+          onDraftChange={form.setTagDraft}
+          onKeyDown={form.handleTagKeyDown}
+          onAdd={form.addTag}
+          onRemove={form.removeTag}
+        />
       </div>
-      <label>
-        Ответ
-        <div className="format-toolbar" aria-label="Форматирование ответа">
-          <button className="icon-button" title="Жирный" onClick={() => applyFormat("bold")} type="button">
-            B
-          </button>
-          <button className="icon-button" title="Курсив" onClick={() => applyFormat("italic")} type="button">
-            I
-          </button>
-          <button className="icon-button" title="Код в строке" onClick={() => applyFormat("inlineCode")} type="button">
-            {"</>"}
-          </button>
-          <button className="secondary-button" onClick={() => applyFormat("codeBlock")} type="button">
-            Блок кода
-          </button>
-        </div>
-        <textarea ref={textareaRef} value={backText} onChange={(event) => setBackText(event.target.value)} required rows={6} />
-      </label>
-      <div className="actions">
-        <button className="primary-button" disabled={isSubmitting} type="submit">
-          {submitLabel}
-        </button>
-        {onCancel ? (
-          <button className="ghost-button" onClick={onCancel} type="button">
-            Отмена
-          </button>
-        ) : null}
-      </div>
+      <CardAnswerField value={form.backText} onChange={form.setBackText} />
+      <CardFormActions submitLabel={submitLabel} isSubmitting={form.isSubmitting} onCancel={onCancel} />
     </form>
   );
-}
-
-function formatWrap(kind: FormatKind): [string, string] {
-  if (kind === "bold") return ["**", "**"];
-  if (kind === "italic") return ["*", "*"];
-  if (kind === "inlineCode") return ["`", "`"];
-  return ["\n```\n", "\n```\n"];
 }
