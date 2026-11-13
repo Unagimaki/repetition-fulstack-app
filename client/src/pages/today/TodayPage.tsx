@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useListCardsQuery } from "../../entities/card/api/cardApi";
+import { useListCardsQuery, useReviewCardMutation } from "../../entities/card/api/cardApi";
+import type { ReviewResult } from "../../entities/card/model/types";
 
 const timeFormat = new Intl.DateTimeFormat("ru-RU", {
   timeZone: "Europe/Saratov",
@@ -9,11 +10,23 @@ const timeFormat = new Intl.DateTimeFormat("ru-RU", {
 
 export function TodayPage() {
   const [page, setPage] = useState(1);
+  const [reviewCard, { isLoading: isReviewing }] = useReviewCardMutation();
+  const [reviewError, setReviewError] = useState<string | null>(null);
   const { currentData: data, isFetching, isError } = useListCardsQuery(
     { todayOnly: true, page, pageSize: 50 },
     { pollingInterval: 60_000, refetchOnMountOrArgChange: true }
   );
   const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / 50));
+
+  async function handleReview(id: string, result: ReviewResult) {
+    setReviewError(null);
+    try {
+      await reviewCard({ id, result }).unwrap();
+      setPage(1);
+    } catch {
+      setReviewError("Не удалось сохранить результат. Попробуйте ещё раз.");
+    }
+  }
 
   return (
     <main className="page">
@@ -30,6 +43,7 @@ export function TodayPage() {
         {data?.items.length === 0 ? (
           <div className="empty-state surface">На сегодня нет карточек для повторения</div>
         ) : null}
+        {reviewError ? <div className="error-state surface" role="alert">{reviewError}</div> : null}
         <div className="section">
           {data?.items.map((card) => (
             <article className="surface today-card" key={card.id}>
@@ -42,6 +56,11 @@ export function TodayPage() {
                     {card.tags.map((tag) => <span className="tag" key={tag}>{tag}</span>)}
                   </div>
                 ) : null}
+                <div className="review-actions today-review-actions">
+                  <button className="primary-button" disabled={isReviewing || isFetching} onClick={() => handleReview(card.id, "know")} type="button">Знаю</button>
+                  <button className="secondary-button" disabled={isReviewing || isFetching} onClick={() => handleReview(card.id, "unsure")} type="button">Не уверен</button>
+                  <button className="danger-soft-button" disabled={isReviewing || isFetching} onClick={() => handleReview(card.id, "dont_know")} type="button">Не знаю</button>
+                </div>
               </div>
             </article>
           ))}
