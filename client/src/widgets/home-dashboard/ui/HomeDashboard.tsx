@@ -1,4 +1,4 @@
-import { CardForm } from "../../../features/card-form/ui/CardForm";
+import { CardForm } from "../../../features/card-form";
 import { ReviewCard } from "../../../features/review-card/ui/ReviewCard";
 import { useHomeDashboard } from "../model/useHomeDashboard";
 
