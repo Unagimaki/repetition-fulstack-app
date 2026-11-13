@@ -41,6 +41,7 @@ export function HomeDashboard() {
         {isFetching ? <div className="muted-state">Обновляю данные...</div> : null}
         {currentCard ? (
           <ReviewCard
+            key={currentCard.id}
             card={currentCard}
             position={`1 из ${dueCardsCount}`}
             onReview={reviewCard}
