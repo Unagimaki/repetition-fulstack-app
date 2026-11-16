@@ -151,12 +151,11 @@ func (r *CardRepository) SoftDelete(ctx context.Context, id string) error {
 }
 
 func (r *CardRepository) List(ctx context.Context, filter carddomain.ListFilter) (carddomain.ListResult, error) {
+	if filter.TodayOnly {
+		return r.listToday(ctx, filter)
+	}
 	where := []string{"c.deleted_at is null"}
 	args := []any{}
-	if filter.TodayOnly {
-		args = append(args, filter.DayStart, filter.DayEnd)
-		where = append(where, "c.next_review_at >= $1 and c.next_review_at < $2")
-	}
 
 	if filter.DueOnly {
 		args = append(args, time.Now().UTC())
@@ -193,11 +192,6 @@ func (r *CardRepository) List(ctx context.Context, filter carddomain.ListFilter)
 	limitPosition := "$" + itoa(len(args)-1)
 	offsetPosition := "$" + itoa(len(args))
 	orderBy := "c.next_review_at asc, c.created_at desc"
-	if filter.TodayOnly {
-		orderBy = `case when c.level <= 2 then 0 else 1 end asc,
-			case when c.level <= 2 then c.created_at end desc,
-			c.next_review_at asc`
-	}
 
 	query := `
 		select c.id, c.title, c.front_text, c.back_text, c.level, c.next_review_at,
@@ -228,35 +222,8 @@ func (r *CardRepository) List(ctx context.Context, filter carddomain.ListFilter)
 }
 
 func (r *CardRepository) Due(ctx context.Context, filter carddomain.DueFilter) ([]carddomain.Card, error) {
-	rows, err := r.pool.Query(ctx, `
-		with backlog_usage as (
-			select count(*)::integer as used
-			from card_reviews
-			where was_backlog and reviewed_at >= $2 and reviewed_at < $3
-		), ranked as (
-			select c.*,
-				case
-					when c.level <= 2 then 0
-					when c.next_review_at >= $2 then 1
-					else 2
-				end as due_priority,
-				row_number() over (
-					partition by (c.level >= 3 and c.next_review_at < $2)
-					order by c.next_review_at asc, c.created_at asc
-				) as backlog_rank
-			from cards c
-			where c.deleted_at is null and c.next_review_at <= $1
-		)
-		select id, title, front_text, back_text, level, next_review_at,
-			last_reviewed_at, created_at, updated_at
-		from ranked, backlog_usage
-		where due_priority < 2
-			or backlog_rank <= greatest($5 - backlog_usage.used, 0)
-		order by due_priority asc,
-			case when due_priority = 0 then created_at end desc,
-			next_review_at asc
-		limit $4
-	`, filter.Now, filter.DayStart, filter.DayEnd, filter.Limit, filter.DailyBacklogLimit)
+	rows, err := r.pool.Query(ctx, reviewQueueCTE+`select `+reviewQueueColumns+` from queue order by `+reviewQueueOrder+` limit $6`,
+		filter.Now, filter.DayStart, filter.DayEnd, filter.DailyBacklogLimit, false, filter.Limit)
 	if err != nil {
 		return nil, err
 	}
