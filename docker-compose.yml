@@ -1,6 +1,23 @@
 version: "3.9"
 
 services:
+  bot:
+    build:
+      context: .
+      dockerfile: bot/Dockerfile
+    image: repetition-bot:local
+    container_name: repetition-bot
+    restart: unless-stopped
+    init: true
+    depends_on:
+      backend:
+        condition: service_started
+    environment:
+      TELEGRAM_BOT_TOKEN: "${TELEGRAM_BOT_TOKEN:?Set TELEGRAM_BOT_TOKEN in .env}"
+      BACKEND_API_URL: "http://backend:14000"
+      BOT_POLL_INTERVAL_MS: "${BOT_POLL_INTERVAL_MS:-60000}"
+      PUBLIC_APP_URL: "${PUBLIC_APP_URL:-http://localhost:15173}"
+
   backend:
     image: repetition-backend:local
     container_name: repetition-backend

@@ -40,6 +40,15 @@ func TestListTodayUsesSaratovCalendarDay(t *testing.T) {
 			if !repository.listFilter.DayStart.Equal(start) || !repository.listFilter.DayEnd.Equal(start.AddDate(0, 0, 1)) {
 				t.Fatalf("unexpected day bounds: %v to %v", repository.listFilter.DayStart, repository.listFilter.DayEnd)
 			}
+			if _, err := service.Due(context.Background(), 20); err != nil {
+				t.Fatal(err)
+			}
+			if !repository.listFilter.Now.Equal(repository.dueFilter.Now) ||
+				!repository.listFilter.DayStart.Equal(repository.dueFilter.DayStart) ||
+				!repository.listFilter.DayEnd.Equal(repository.dueFilter.DayEnd) ||
+				repository.listFilter.DailyBacklogLimit != repository.dueFilter.DailyBacklogLimit {
+				t.Fatal("daily list and home queue use different queue parameters")
+			}
 		})
 	}
 }

@@ -11,7 +11,10 @@ import type { Card, CardInput, ReviewResult } from "../../../entities/card/model
 
 export function useHomeDashboard() {
   const [editingCard, setEditingCard] = useState<Card | null>(null);
-  const { data: dueCards = [], error, isFetching } = useDueCardsQuery();
+  const { data: dueCards = [], error, isFetching } = useDueCardsQuery(undefined, {
+    pollingInterval: 60_000,
+    refetchOnMountOrArgChange: true
+  });
   const [createCardMutation, createState] = useCreateCardMutation();
   const [updateCardMutation, updateState] = useUpdateCardMutation();
   const [reviewCardMutation] = useReviewCardMutation();
