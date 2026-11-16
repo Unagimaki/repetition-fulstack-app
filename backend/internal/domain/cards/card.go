@@ -47,6 +47,7 @@ type ListFilter struct {
 	DueOnly           bool
 	Search            string
 	Tag               string
+	Level             *int
 	Page              int
 	PageSize          int
 }

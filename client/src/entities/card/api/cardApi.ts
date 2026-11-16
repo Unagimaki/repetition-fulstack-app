@@ -12,12 +12,14 @@ export const cardApi = createApi({
       query: () => "/api/tags",
       providesTags: ["Tags"]
     }),
-    listCards: builder.query<CardsPage, { dueOnly?: boolean; todayOnly?: boolean; search?: string; page?: number; pageSize?: number } | void>({
+    listCards: builder.query<CardsPage, { dueOnly?: boolean; todayOnly?: boolean; tag?: string; level?: number; search?: string; page?: number; pageSize?: number } | void>({
       query: (params) => ({
         url: "/api/cards",
         params: {
           ...(params?.dueOnly ? { dueOnly: true } : {}),
           ...(params?.todayOnly ? { todayOnly: true } : {}),
+          ...(params?.tag ? { tag: params.tag } : {}),
+          ...(params?.level !== undefined ? { level: params.level } : {}),
           ...(params?.search ? { search: params.search } : {}),
           ...(params?.page ? { page: params.page } : {}),
           ...(params?.pageSize ? { pageSize: params.pageSize } : {})

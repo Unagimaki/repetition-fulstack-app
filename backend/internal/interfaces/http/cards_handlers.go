@@ -14,7 +14,17 @@ type reviewRequest struct {
 
 func (r *Router) listCards(w http.ResponseWriter, req *http.Request) {
 	query := req.URL.Query()
+	var level *int
+	if query.Has("level") {
+		value, err := strconv.Atoi(query.Get("level"))
+		if err != nil || value < 0 || value >= len(repetition.Intervals) {
+			writeJSON(w, http.StatusBadRequest, map[string]string{"error": "Invalid repetition level"})
+			return
+		}
+		level = &value
+	}
 	result, err := r.cards.List(req.Context(), carddomain.ListFilter{
+		Level:     level,
 		TodayOnly: query.Get("todayOnly") == "true",
 		DueOnly:   query.Get("dueOnly") == "true",
 		Search:    query.Get("search"),

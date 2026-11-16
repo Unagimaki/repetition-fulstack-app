@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
+	carddomain "repetition-app/backend/internal/domain/cards"
 )
 
 func TestTodayStartsWithHomeQueue(t *testing.T) {
@@ -25,6 +26,10 @@ func TestTodayStartsWithHomeQueue(t *testing.T) {
 	_, err = conn.Exec(ctx, `
  create temporary table cards (id text, level integer, next_review_at timestamptz, created_at timestamptz, deleted_at timestamptz);
  create temporary table card_reviews (was_backlog boolean, reviewed_at timestamptz);
+ create temporary table tags (id text, name text);
+ create temporary table card_tags (card_id text, tag_id text);
+ insert into tags values ('tag-1', 'go');
+ insert into card_tags values ('new-learning', 'tag-1'), ('future-learning', 'tag-1'), ('backlog-second', 'tag-1');
  insert into cards (id, level, next_review_at, created_at) values
  ('old-learning', 1, '2026-11-15 08:00Z', '2026-11-15 07:00Z'),
  ('new-learning', 0, '2026-11-16 08:00Z', '2026-11-16 07:00Z'),
@@ -68,6 +73,54 @@ func TestTodayStartsWithHomeQueue(t *testing.T) {
 		want = append(want, "future-learning")
 		if !reflect.DeepEqual(today, want) {
 			t.Fatalf("today = %v, want %v", today, want)
+		}
+		zero := 0
+		four := 4
+		cases := []struct {
+			name   string
+			filter carddomain.ListFilter
+			want   []string
+		}{
+			{"tag", carddomain.ListFilter{Tag: "go"}, []string{"new-learning", "future-learning"}},
+			{"level zero", carddomain.ListFilter{Level: &zero}, []string{"new-learning", "future-learning"}},
+			{"combined", carddomain.ListFilter{Tag: "go", Level: &zero}, []string{"new-learning", "future-learning"}},
+			{"no matches", carddomain.ListFilter{Tag: "missing"}, []string{}},
+			{"backlog stays limited", carddomain.ListFilter{Tag: "go", Level: &four}, []string{}},
+		}
+		for _, tc := range cases {
+			where, args := todayQueueFilters(tc.filter, []any{now, start, start.Add(24 * time.Hour), 1, true})
+			rows, err := conn.Query(ctx, reviewQueueCTE+`select id from queue`+where+` order by `+reviewQueueOrder, args...)
+			if err != nil {
+				t.Fatal(err)
+			}
+			ids, err := pgx.CollectRows(rows, pgx.RowTo[string])
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !reflect.DeepEqual(ids, tc.want) {
+				t.Fatalf("%s: got %v, want %v", tc.name, ids, tc.want)
+			}
+			var count int
+			if err := conn.QueryRow(ctx, reviewQueueCTE+`select count(*) from queue`+where, args...).Scan(&count); err != nil {
+				t.Fatal(err)
+			}
+			if count != len(tc.want) {
+				t.Fatalf("%s: count = %d, want %d", tc.name, count, len(tc.want))
+			}
+			if count > 1 {
+				args = append(args, 1, 1)
+				rows, err := conn.Query(ctx, reviewQueueCTE+`select id from queue`+where+` order by `+reviewQueueOrder+` limit $`+itoa(len(args)-1)+` offset $`+itoa(len(args)), args...)
+				if err != nil {
+					t.Fatal(err)
+				}
+				page, err := pgx.CollectRows(rows, pgx.RowTo[string])
+				if err != nil {
+					t.Fatal(err)
+				}
+				if !reflect.DeepEqual(page, tc.want[1:2]) {
+					t.Fatalf("%s: unexpected second page %v", tc.name, page)
+				}
+			}
 		}
 	}
 }
