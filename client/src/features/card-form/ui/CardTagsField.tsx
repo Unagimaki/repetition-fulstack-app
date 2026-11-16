@@ -1,3 +1,5 @@
+import { Button } from "../../../shared/ui/Button";
+import { TextField } from "@radix-ui/themes";
 import { useId } from "react";
 import type { KeyboardEventHandler } from "react";
 
@@ -20,13 +22,13 @@ export function CardTagsField({ selectedTags, tagDraft, tagOptions, onDraftChang
       <div className="tag-editor">
         <div className="selected-tags">
           {selectedTags.map((tag) => (
-            <button className="tag-chip" key={tag} onClick={() => onRemove(tag)} type="button">
+            <Button className="tag-chip" key={tag} onClick={() => onRemove(tag)} type="button">
               {tag} ×
-            </button>
+            </Button>
           ))}
         </div>
         <div className="tag-input-row">
-          <input
+          <TextField.Root
             id={inputId}
             list={optionsId}
             placeholder="Выбрать или создать тег"
@@ -34,9 +36,9 @@ export function CardTagsField({ selectedTags, tagDraft, tagOptions, onDraftChang
             onChange={(event) => onDraftChange(event.target.value)}
             onKeyDown={onKeyDown}
           />
-          <button className="ghost-button" onClick={() => onAdd()} type="button">
+          <Button className="ghost-button" onClick={() => onAdd()} type="button">
             Добавить
-          </button>
+          </Button>
         </div>
         <datalist id={optionsId}>
           {tagOptions.map((tag) => (

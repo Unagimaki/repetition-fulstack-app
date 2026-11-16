@@ -1,3 +1,5 @@
+import { Button } from "../../../shared/ui/Button";
+import { TextArea } from "@radix-ui/themes";
 import { useId, useRef } from "react";
 
 type Props = { value: string; onChange: (value: string) => void };
@@ -32,20 +34,20 @@ export function CardAnswerField({ value, onChange }: Props) {
     <div className="form-field">
       <label htmlFor={inputId}>Ответ</label>
       <div className="format-toolbar" aria-label="Форматирование ответа">
-        <button className="icon-button" title="Жирный" onClick={() => applyFormat("bold")} type="button">
+        <Button className="icon-button" title="Жирный" onClick={() => applyFormat("bold")} type="button">
           B
-        </button>
-        <button className="icon-button" title="Курсив" onClick={() => applyFormat("italic")} type="button">
+        </Button>
+        <Button className="icon-button" title="Курсив" onClick={() => applyFormat("italic")} type="button">
           I
-        </button>
-        <button className="icon-button" title="Код в строке" onClick={() => applyFormat("inlineCode")} type="button">
+        </Button>
+        <Button className="icon-button" title="Код в строке" onClick={() => applyFormat("inlineCode")} type="button">
           {"</>"}
-        </button>
-        <button className="secondary-button" onClick={() => applyFormat("codeBlock")} type="button">
+        </Button>
+        <Button className="secondary-button" onClick={() => applyFormat("codeBlock")} type="button">
           Блок кода
-        </button>
+        </Button>
       </div>
-      <textarea id={inputId} ref={textareaRef} value={value} onChange={(event) => onChange(event.target.value)} required rows={6} />
+      <TextArea id={inputId} ref={textareaRef} value={value} onChange={(event) => onChange(event.target.value)} required rows={6} />
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { Button } from "../../../shared/ui/Button";
 import { useListTagsQuery } from "../../../entities/card/api/cardApi";
 
 const levels = ["2 минуты", "10 минут", "1 час", "6 часов", "Следующий день", "3 дня", "7 дней", "14 дней", "30 дней"];
@@ -27,8 +28,8 @@ export function TodayFilters({ tag, level, onChange }: Props) {
           {levels.map((label, index) => <option value={index} key={index}>Уровень {index + 1}: {label}</option>)}
         </select>
       </label>
-      <button className="ghost-button" disabled={!tag && !level} onClick={() => onChange("", "")} type="button">Сбросить фильтры</button>
-      {isError ? <button className="ghost-button" onClick={() => refetch()} type="button">Не удалось загрузить теги. Повторить</button> : null}
+      <Button className="ghost-button" disabled={!tag && !level} onClick={() => onChange("", "")} type="button">Сбросить фильтры</Button>
+      {isError ? <Button className="ghost-button" onClick={() => refetch()} type="button">Не удалось загрузить теги. Повторить</Button> : null}
     </div>
   );
 }

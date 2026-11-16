@@ -3,5 +3,6 @@ dist/
 .env
 .env.local
 *.log
+.logs/
 *.exe
 .DS_Store
