@@ -1,3 +1,6 @@
+import { EditCardDialog } from "../../../shared/ui/EditCardDialog";
+import { Button } from "../../../shared/ui/Button";
+import { TextField } from "@radix-ui/themes";
 import { CardForm } from "../../../features/card-form";
 import { CardsGrid } from "../../cards-grid/ui/CardsGrid";
 import { useCardsCatalog } from "../model/useCardsCatalog";
@@ -28,7 +31,7 @@ export function CardsCatalog() {
             <p className="eyebrow">База</p>
             <h1>Все карточки</h1>
           </div>
-          <input className="search-input" placeholder="Поиск" value={search} onChange={(event) => setSearch(event.target.value)} />
+          <TextField.Root className="search-input" placeholder="Поиск" value={search} onChange={(event) => setSearch(event.target.value)} />
         </div>
         {error ? <div className="error-state surface">{error}</div> : null}
         {isFetching ? <div className="muted-state">Обновляю данные...</div> : null}
@@ -38,23 +41,20 @@ export function CardsCatalog() {
             Страница {page} из {totalPages}. Всего: {total}
           </span>
           <div className="pagination-actions">
-            <button className="secondary-button" disabled={page <= 1} onClick={() => setPage(page - 1)} type="button">
+            <Button className="secondary-button" disabled={page <= 1} onClick={() => setPage(page - 1)} type="button">
               Назад
-            </button>
-            <button className="secondary-button" disabled={page >= totalPages} onClick={() => setPage(page + 1)} type="button">
+            </Button>
+            <Button className="secondary-button" disabled={page >= totalPages} onClick={() => setPage(page + 1)} type="button">
               Вперёд
-            </button>
+            </Button>
           </div>
         </div>
       </section>
 
       {editingCard ? (
-        <div className="modal-backdrop">
-          <div className="modal surface">
-            <h2>Редактировать карточку</h2>
+        <EditCardDialog onClose={() => setEditingCard(null)}>
             <CardForm card={editingCard} submitLabel="Сохранить" onSubmit={updateCard} onCancel={() => setEditingCard(null)} />
-          </div>
-        </div>
+        </EditCardDialog>
       ) : null}
     </main>
   );

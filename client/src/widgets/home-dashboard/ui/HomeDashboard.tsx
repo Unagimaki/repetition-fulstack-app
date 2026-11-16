@@ -1,3 +1,4 @@
+import { EditCardDialog } from "../../../shared/ui/EditCardDialog";
 import { CardForm } from "../../../features/card-form";
 import { ReviewCard } from "../../../features/review-card/ui/ReviewCard";
 import { useHomeDashboard } from "../model/useHomeDashboard";
@@ -18,12 +19,12 @@ export function HomeDashboard() {
   } = useHomeDashboard();
 
   return (
-    <main className="page">
+    <main className="page home-page">
       <section className="section">
         <div className="section-heading">
           <div>
             <p className="eyebrow">Новая теория</p>
-            <h1>Создать карточку</h1>
+            <h2>Создать карточку</h2>
           </div>
         </div>
         <CardForm onSubmit={createCard} />
@@ -33,7 +34,7 @@ export function HomeDashboard() {
         <div className="section-heading">
           <div>
             <p className="eyebrow">Очередь</p>
-            <h1>Повторение сейчас</h1>
+            <h2>Повторение сейчас</h2>
           </div>
           <span className="counter">{dueCardsCount}</span>
         </div>
@@ -55,12 +56,9 @@ export function HomeDashboard() {
       </section>
 
       {editingCard ? (
-        <div className="modal-backdrop">
-          <div className="modal surface">
-            <h2>Редактировать карточку</h2>
+        <EditCardDialog onClose={() => setEditingCard(null)}>
             <CardForm card={editingCard} submitLabel="Сохранить" onSubmit={updateCard} onCancel={() => setEditingCard(null)} />
-          </div>
-        </div>
+        </EditCardDialog>
       ) : null}
     </main>
   );

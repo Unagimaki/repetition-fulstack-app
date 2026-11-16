@@ -1,3 +1,6 @@
+import { Pencil, RotateCcw, Trash2 } from "lucide-react";
+import { Button } from "../../../shared/ui/Button";
+import { Badge } from "@radix-ui/themes";
 import { useState } from "react";
 import type { Card } from "../../../entities/card/model/types";
 import { FormattedText } from "../../../shared/api/FormattedText";
@@ -24,15 +27,15 @@ export function CardsGrid({ cards, onEdit, onDelete, onReset }: Props) {
         return (
           <article className="tile-card surface" key={card.id}>
             <div className="card-tools">
-              <button className="icon-button" title="Редактировать" onClick={() => onEdit(card)} type="button">
-                ✎
-              </button>
-              <button className="icon-button" title="Сбросить уровень" onClick={() => onReset(card.id)} type="button">
-                ↺
-              </button>
-              <button className="icon-button danger" title="Удалить" onClick={() => onDelete(card.id)} type="button">
-                ×
-              </button>
+              <Button className="icon-button" title="Редактировать" onClick={() => onEdit(card)} type="button">
+                <Pencil size={15} aria-hidden="true" />
+              </Button>
+              <Button className="icon-button" title="Сбросить уровень" onClick={() => onReset(card.id)} type="button">
+                <RotateCcw size={15} aria-hidden="true" />
+              </Button>
+              <Button className="icon-button danger" title="Удалить" onClick={() => onDelete(card.id)} type="button">
+                <Trash2 size={15} aria-hidden="true" />
+              </Button>
             </div>
 
             <div className={isFlipped ? "tile-flip-card flipped" : "tile-flip-card"}>
@@ -46,9 +49,9 @@ export function CardsGrid({ cards, onEdit, onDelete, onReset }: Props) {
                 </div>
                 <div className="tags-row">
                   {card.tags.map((tag) => (
-                    <span className="tag" key={tag}>
+                    <Badge className="tag" color="gray" variant="soft" key={tag}>
                       {tag}
-                    </span>
+                    </Badge>
                   ))}
                 </div>
               </div>
@@ -60,13 +63,13 @@ export function CardsGrid({ cards, onEdit, onDelete, onReset }: Props) {
               </div>
             </div>
 
-            <button
+            <Button
               className="ghost-button fit"
               onClick={() => setFlippedCards((state) => ({ ...state, [card.id]: !state[card.id] }))}
               type="button"
             >
               {isFlipped ? "Скрыть ответ" : "Показать ответ"}
-            </button>
+            </Button>
           </article>
         );
       })}

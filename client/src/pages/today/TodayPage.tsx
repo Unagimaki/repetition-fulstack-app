@@ -1,3 +1,6 @@
+import { EditCardDialog } from "../../shared/ui/EditCardDialog";
+import { Button } from "../../shared/ui/Button";
+import { Badge } from "@radix-ui/themes";
 import { useState } from "react";
 import { useListCardsQuery, useReviewCardMutation, useUpdateCardMutation } from "../../entities/card/api/cardApi";
 import type { Card, CardInput, ReviewResult } from "../../entities/card/model/types";
@@ -76,20 +79,20 @@ export function TodayPage() {
               <time dateTime={card.nextReviewAt}>{timeFormat.format(new Date(card.nextReviewAt))}</time>
               <div>
                 <h2>{card.title}</h2>
-                <button className="ghost-button" type="button" disabled={isReviewing || isFetching} onClick={() => {
+                <Button className="ghost-button" type="button" disabled={isReviewing || isFetching} onClick={() => {
                   setEditError(null);
                   setEditingCard(card);
-                }}>Редактировать</button>
+                }}>Редактировать</Button>
                 <p className="muted-state">Уровень {card.level + 1}: {card.levelLabel}</p>
                 {card.tags.length > 0 ? (
                   <div className="tags-row">
-                    {card.tags.map((tag) => <span className="tag" key={tag}>{tag}</span>)}
+                    {card.tags.map((tag) => <Badge className="tag" color="gray" variant="soft" key={tag}>{tag}</Badge>)}
                   </div>
                 ) : null}
                 <div className="review-actions today-review-actions">
-                  <button className="primary-button" disabled={isReviewing || isFetching} onClick={() => handleReview(card.id, "know")} type="button">Знаю</button>
-                  <button className="secondary-button" disabled={isReviewing || isFetching} onClick={() => handleReview(card.id, "unsure")} type="button">Не уверен</button>
-                  <button className="danger-soft-button" disabled={isReviewing || isFetching} onClick={() => handleReview(card.id, "dont_know")} type="button">Не знаю</button>
+                  <Button className="primary-button" disabled={isReviewing || isFetching} onClick={() => handleReview(card.id, "know")} type="button">Знаю</Button>
+                  <Button className="secondary-button" disabled={isReviewing || isFetching} onClick={() => handleReview(card.id, "unsure")} type="button">Не уверен</Button>
+                  <Button className="danger-soft-button" disabled={isReviewing || isFetching} onClick={() => handleReview(card.id, "dont_know")} type="button">Не знаю</Button>
                 </div>
               </div>
             </article>
@@ -99,22 +102,19 @@ export function TodayPage() {
           <div className="pagination">
             <span>Страница {page} из {totalPages}. Всего: {data.total}</span>
             <div className="pagination-actions">
-              <button className="secondary-button" disabled={page <= 1 || isFetching} onClick={() => setPage(page - 1)} type="button">Назад</button>
-              <button className="secondary-button" disabled={page >= totalPages || isFetching} onClick={() => setPage(page + 1)} type="button">Вперёд</button>
+              <Button className="secondary-button" disabled={page <= 1 || isFetching} onClick={() => setPage(page - 1)} type="button">Назад</Button>
+              <Button className="secondary-button" disabled={page >= totalPages || isFetching} onClick={() => setPage(page + 1)} type="button">Вперёд</Button>
             </div>
           </div>
         ) : null}
       </section>
       {editingCard ? (
-        <div className="modal-backdrop">
-          <div className="modal surface" role="dialog" aria-modal="true" aria-labelledby="today-edit-title">
-            <h2 id="today-edit-title">Редактировать карточку</h2>
+        <EditCardDialog onClose={() => setEditingCard(null)} busy={isUpdating}>
             {editError ? <div className="error-state surface" role="alert">{editError}</div> : null}
             <CardForm key={editingCard.id} card={editingCard} submitLabel="Сохранить" onSubmit={handleUpdate} onCancel={() => {
               if (!isUpdating) setEditingCard(null);
             }} />
-          </div>
-        </div>
+        </EditCardDialog>
       ) : null}
     </main>
   );
