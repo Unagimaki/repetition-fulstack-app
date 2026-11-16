@@ -84,6 +84,28 @@ a {
   margin-top: 16px;
 }
 
+.today-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 16px;
+}
+
+.today-filters label {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+.today-filters select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background: #fff;
+  color: #111827;
+  font: inherit;
+}
+
 .today-card h2 {
   margin-bottom: 8px;
   font-size: 1.1rem;

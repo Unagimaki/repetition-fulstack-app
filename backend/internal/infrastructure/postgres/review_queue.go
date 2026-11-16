@@ -37,12 +37,13 @@ const reviewQueueOrder = `case when next_review_at <= $1 then 0 else 1 end asc,
 
 func (r *CardRepository) listToday(ctx context.Context, filter carddomain.ListFilter) (carddomain.ListResult, error) {
 	args := []any{filter.Now, filter.DayStart, filter.DayEnd, filter.DailyBacklogLimit, true}
+	where, args := todayQueueFilters(filter, args)
 	var total int
-	if err := r.pool.QueryRow(ctx, reviewQueueCTE+`select count(*) from queue`, args...).Scan(&total); err != nil {
+	if err := r.pool.QueryRow(ctx, reviewQueueCTE+`select count(*) from queue`+where, args...).Scan(&total); err != nil {
 		return carddomain.ListResult{}, err
 	}
 	args = append(args, filter.PageSize, (filter.Page-1)*filter.PageSize)
-	rows, err := r.pool.Query(ctx, reviewQueueCTE+`select `+reviewQueueColumns+` from queue order by `+reviewQueueOrder+` limit $6 offset $7`, args...)
+	rows, err := r.pool.Query(ctx, reviewQueueCTE+`select `+reviewQueueColumns+` from queue`+where+` order by `+reviewQueueOrder+` limit $`+itoa(len(args)-1)+` offset $`+itoa(len(args)), args...)
 	if err != nil {
 		return carddomain.ListResult{}, err
 	}
@@ -52,4 +53,18 @@ func (r *CardRepository) listToday(ctx context.Context, filter carddomain.ListFi
 		return carddomain.ListResult{}, err
 	}
 	return carddomain.ListResult{Items: cards, Total: total, Page: filter.Page, PageSize: filter.PageSize}, nil
+}
+
+// Filter the completed queue so filters never change the daily backlog limit.
+func todayQueueFilters(filter carddomain.ListFilter, args []any) (string, []any) {
+	where := " where true"
+	if filter.Tag != "" {
+		args = append(args, filter.Tag)
+		where += ` and exists (select 1 from card_tags ct join tags t on t.id = ct.tag_id where ct.card_id = queue.id and t.name = $` + itoa(len(args)) + `)`
+	}
+	if filter.Level != nil {
+		args = append(args, *filter.Level)
+		where += " and queue.level = $" + itoa(len(args))
+	}
+	return where, args
 }

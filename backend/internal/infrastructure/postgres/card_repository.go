@@ -166,6 +166,10 @@ func (r *CardRepository) List(ctx context.Context, filter carddomain.ListFilter)
 		position := "$" + itoa(len(args))
 		where = append(where, "(c.title ilike "+position+" or c.front_text ilike "+position+" or c.back_text ilike "+position+")")
 	}
+	if filter.Level != nil {
+		args = append(args, *filter.Level)
+		where = append(where, "c.level = $"+itoa(len(args)))
+	}
 	if filter.Tag != "" {
 		args = append(args, filter.Tag)
 		where = append(where, `exists (
